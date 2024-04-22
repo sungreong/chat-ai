@@ -1,0 +1,14 @@
+# ReactJS
+/node_modules
+/build
+/.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyi
+*.egg-info/
+dist/
+venv/
