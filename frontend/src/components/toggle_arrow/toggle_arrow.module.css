@@ -1,0 +1,68 @@
+
+
+.toggle-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    width: 1%; /* 전체 너비의 5% */
+    min-width: 15px; /* 최소 너비 */
+    opacity: 0.5; /* 기본 투명도 */
+    padding-left: 1px; /* 왼쪽 패딩 */
+    padding-right: 1px; /* 오른쪽 패딩 */
+    transition: opacity 0.3s ease, border 0.3s ease; /* 투명도와 테두리 변경 애니메이션 */
+    border: 2px solid transparent; /* 초기 테두리 설정, 투명 */
+}
+
+.toggle-container:hover .arrow::before,
+.toggle-container:hover .arrow::after {
+    width: 15px; /* 화살표 선의 길이를 더 크게 조정 */
+    height: 3px; /* 화살표 선의 굵기, 보다 눈에 띄게 하려면 이 값을 조정 */
+}
+
+.arrow {
+    position: relative;
+    width: 3px; /* 초기 상태에서 세로선의 너비를 유지 */
+    height: 30px; /* 세로선의 높이를 유지 */
+    background-color: black; /* 세로선 색상을 유지 */
+    transition: all 0.3s ease; /* 부드러운 전환 효과를 유지 */
+}
+
+.arrow::before,
+.arrow::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%; /* 화살표 선을 중앙에서 시작하도록 조정 */
+    width: 0; /* 마우스 호버 시에만 화살표 선이 보이도록 초기 상태에서는 길이를 0으로 설정 */
+    height: 3px; /* 화살표 선의 굵기 */
+    background-color: black;
+    transition: transform 0.3s ease; /* 변형에 대한 부드러운 전환 효과 */
+}
+
+/* .toggle-container에 마우스 호버 시 화살표 모양 */
+.toggle-container:hover .arrow {
+    width: 0; /* 세로선을 사라지게 함 */
+}
+
+/* 기본 상태에서 "<" 모양으로 변경 */
+.toggle-container:hover .arrow::after {
+    transform: translateY(-50%) translateX(-50%) rotate(-45deg);
+    transform-origin: 100% 0;
+}
+
+.toggle-container:hover .arrow::before {
+    transform: translateY(-50%) translateX(-50%) rotate(45deg);
+    transform-origin: 100% 100%;
+}
+
+/* .collapsed 클래스가 적용됐을 때 ">" 모양으로 변경 */
+.toggle-container:hover .arrow.collapsed::after {
+    transform: translateY(-50%) translateX(-50%) rotate(45deg);
+    transform-origin: 0 0;
+}
+
+.toggle-container:hover .arrow.collapsed::before {
+    transform: translateY(-50%) translateX(-50%) rotate(-45deg);
+    transform-origin: 0 100%;
+}

@@ -1,0 +1,34 @@
+.custom-code-block {
+  background-color: #282c34; /* Dark background for contrast */
+  color: #abb2bf; /* Light grey text for readability */
+  border-left: 4px solid #56b6c2; /* Cyan border for emphasis */
+  padding: 0.1em; /* Ample padding around the text */
+  margin: 1em 0; /* Margin for spacing */
+  overflow-x: auto; /* Enable horizontal scrolling for long lines */
+  border-radius: 4px; /* Rounded corners */
+}
+
+.custom-code-block code {
+  font-family: 'Source Code Pro', 'Consolas', 'Monaco', 'Courier New', Courier, monospace; /* Monospaced font for code */
+  display: block; /* Ensure it's displayed as a block */
+  font-size: 0.9em; /* Slightly smaller font size */
+}
+
+/* Additional styles for syntax highlighting simulation */
+
+
+.custom-code-block .copy-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  /* Adjust the styling as per your design */
+}
+
+.custom-code-block {
+  position: relative; /* To position the copy button absolutely within */
+  /* Other styles remain the same */
+}
