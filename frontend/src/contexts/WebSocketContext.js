@@ -16,7 +16,7 @@ export const WebSocketProvider = ({ children }) => {
     }, [generalHistory]); // This useEffect will run after generalHistory changes.
 
     // TODO: USER 정보
-    const sendMessage = (message) => {
+    const sendMessage = (message, setLoading) => {
       if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
           ws.current = new WebSocket(`ws://localhost:8000/ws/${user}`);
           ws.current.onmessage = (event) => {
@@ -27,15 +27,16 @@ export const WebSocketProvider = ({ children }) => {
             // Update response and history
             const updateHistory = message.type === 'general' ? setGeneralHistory : setSqlHistory;
             // console.log("parsedResponse", updateHistory)
-            console.log("ws", ws)
             updateHistory(prevHistory => prevHistory.map(item =>
               item.id === eventData.id ? { ...item, response: parsedResponse } : item
             ));
             // Set loading to false after receiving the response
             if (eventData.is_last) {
+              console.log("terminate...")
               ws.current.close();
               ws.current = null; // Ensure the reference is cleared
-  
+              setLoading(false); // Update loading state to reflect the UI change
+
             }
           };
     

@@ -37,9 +37,11 @@ class OllamaHTTPStrategy(CommunicationStrategy):
         if "model" not in self.kwargs:
             yield {"content": "Model not found in data", "is_last": True}
             return
+        id = str(eval(data["message"])["id"])
 
         payload = {
             "model": self.kwargs.get("model", "llama2"),
+            "id": id,
             "prompt": eval(data["message"])["question"],
             "stream": self.stream,
             "options": self.options,
@@ -117,10 +119,10 @@ class OllamaHTTPStrategy(CommunicationStrategy):
                     all_content = ""
                     async for data, is_last in self._stream_response(response, cancel_signal):
                         all_content += data
-                        yield {"id": str(uuid.uuid4()), "content": all_content, "is_last": is_last}
+                        yield {"id": payload["id"], "content": all_content, "is_last": is_last}
                 else:
                     result = await response.json()
-                    yield {"id": str(uuid.uuid4()), "content": result["response"], "is_last": True}
+                    yield {"id": payload["id"], "content": result["response"], "is_last": True}
 
     async def _stream_response(self, response, cancel_signal):
         async for line in response.content:

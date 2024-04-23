@@ -107,13 +107,47 @@ async def update_cancel_signal(action: str):
         raise HTTPException(status_code=400, detail="Invalid action")
 
 
+from fastapi import WebSocket
+from typing import List
+
+
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: List[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    def is_connected(self, websocket: WebSocket):
+        return websocket in self.active_connections
+
+    async def disconnect(self, websocket: WebSocket):
+        # Check if the websocket is in the list of active connections
+        if self.is_connected(websocket):
+            # Try to close the websocket if it hasn't been closed already
+            try:
+                await websocket.close()
+            except RuntimeError as e:
+                # Handle the case where the websocket might already be closed
+                print(f"Attempted to close an already closed websocket: {e}")
+            finally:
+                # Ensure the websocket is removed from the list of active connections
+                self.active_connections.remove(websocket)
+
+
+manager = ConnectionManager()
+
+
 @app.websocket("/ws/{user_id}")
 async def websocket_endpoint(websocket: WebSocket, user_id: str) -> NoReturn:
     """
     Websocket for AI responses
     """
 
-    await websocket.accept()
+    # await websocket.accept()
+    await manager.connect(websocket)
+
     strategy_dict = user_db.get(user_id, {})
     if len(strategy_dict) == 0:
         await websocket.send_text(f"Error: Strategy not found for user {user_id}.")
@@ -146,7 +180,8 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str) -> NoReturn:
         print(f"WebSocket error: {e}")
     finally:
         cancel_signal.clear()
-        await websocket.close()
+        # await websocket.close()
+        await manager.disconnect(websocket)
 
 
 app.include_router(router)

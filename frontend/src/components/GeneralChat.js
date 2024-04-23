@@ -47,7 +47,7 @@ function GeneralChat() {
             type: 'general',
             content: question,
             questionId: Date.now().toString()  // Managing uniqueness with timestamps
-        });
+        },setLoading);
         setQuestion('');
     };
 
