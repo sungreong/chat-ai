@@ -26,7 +26,7 @@ class OllamaPayload:
 
     def to_json(self) -> str:
         payload_dict = {"model": self.model, "prompt": self.prompt, "stream": self.stream, "options": self.options}
-        return payload_dict
+        return json.dumps(payload_dict)
 
     def to_dict(self):
         payload_dict = {"model": self.model, "prompt": self.prompt, "stream": self.stream, "options": self.options}

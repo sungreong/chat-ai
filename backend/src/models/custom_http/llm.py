@@ -30,17 +30,40 @@ class SSEManager:
         self.timeout = timeout
 
     def stream(self, payload, callback_manager=None, is_async=False):
-        """Stream data from SSE and handle events using the provided callback manager."""
-        # self.headers["Accept"] = "text/event-stream"
-        import aiohttp
+        print("stream", self.full_url, payload)
+        with requests.post(self.full_url, json=payload, stream=True, headers=self.headers) as response:
+            for chunk in response.iter_content(chunk_size=128):
+                if chunk:
+                    yield chunk
 
-        with aiohttp.ClientSession() as session:
-            with session.post(self.full_url, headers=self.headers, json=payload) as response:
+    # def stream(self, payload, callback_manager=None, is_async=False):
+    #     """Stream data from SSE and handle events using the provided callback manager."""
+    #     # print(self.full_url, payload)
+    #     with requests.Session() as session:
+    #         session.mount(self.base_url, HTTPAdapter(max_retries=self.max_retries))
+    #         self.full_url = "http://localhost:11434/api/generate"
+    #         with session.post(
+    #             self.full_url,
+    #             stream=True,
+    #             headers=self.headers,
+    #             data=payload,
+    #             timeout=self.timeout,
+    #         ) as response:
+    #             if response.status_code != 200:
+    #                 raise RuntimeError(f"Request failed with status code {response.status_code}")
 
-                all_content = ""
-                for data, is_last in self._stream_response(response):
-                    all_content += data
-                    yield {"id": payload["id"], "content": all_content, "is_last": is_last}
+    #             try:
+    #                 client = SSEClient(response)
+    #                 for event in client.events():
+    #                     data = event.data
+    #                     if callback_manager:
+    #                         callback_manager.on_llm_new_token(data)
+    #                     yield data
+    #             except RequestException as exp:
+    #                 raise RuntimeError() from exp
+    #             finally:
+    #                 response.close()
+    #                 client.close()
 
     def send_request(self, payload):
         """Send a simple HTTP POST request without streaming."""
@@ -135,8 +158,7 @@ class LLMAPI(LLM):
         self.params["stream"] = True
         self.params["stop"] = stop or []
         payload = PayloadFactory().create_payload(model_type=self.llm_type, prompt=prompt, **self.params)
-        headers = {"Content-Type": "application/json"}
-
+        headers = {"Content-Type": "application/json", "Accept": "text/event-stream"}
         sse_manager = SSEManager(
             base_url=self.host_name,
             endpoint=self.endpoint,
@@ -144,11 +166,15 @@ class LLMAPI(LLM):
             max_retries=self.max_retries,
             timeout=self.request_timeout,
         )
-        for data in sse_manager.stream(payload.to_json(), callback_manager=run_manager, is_async=True):
-            chunk = GenerationChunk(text=data)
-            if run_manager:
-                run_manager.on_llm_new_token(chunk.text, chunk=chunk)
-            yield chunk
+        for data in sse_manager.stream(payload.to_dict(), callback_manager=run_manager, is_async=False):
+            try:
+                data = json.loads(data.decode("utf-8"))  # Use json.loads to parse JSON correctly
+                chunk = GenerationChunk(text=data["response"])
+                if run_manager:
+                    run_manager.on_llm_new_token(chunk.text, chunk=chunk)
+                yield chunk
+            except json.JSONDecodeError:
+                yield GenerationChunk(text="")
 
     async def _astream(
         self,
@@ -225,8 +251,10 @@ async def main():
             # "num_predict": 300,
         },
     )
-    async for event in llm.astream("write python loop code example please!"):
+    for event in llm.stream("write python loop code example please!"):
         print(event, flush=True, end="")
+    # async for event in llm.astream("write python loop code example please!"):
+    #     print(event, flush=True, end="")
 
 
 # async def _stream_response(response):
