@@ -13,7 +13,7 @@ from typing import Dict, Generator
 import re
 from langchain_core.prompts import ChatPromptTemplate
 
-from langchain_community.chat_models import ChatOllama
+from langchain_community.llms import VLLMOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 
 
@@ -36,6 +36,8 @@ class OllamaHTTPStrategy(CommunicationStrategy):
                 del self.options[key]
 
     async def execute(self, data: Dict, cancel_signal: asyncio.Event = None):
+        print(data)
+
         if "model" not in self.kwargs:
             yield {"content": "Model not found in data", "is_last": True}
             return

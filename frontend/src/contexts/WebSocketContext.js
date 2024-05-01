@@ -36,7 +36,6 @@ export const WebSocketProvider = ({ children }) => {
               ws.current.close();
               ws.current = null; // Ensure the reference is cleared
               setLoading(false); // Update loading state to reflect the UI change
-
             }
           };
     

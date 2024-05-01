@@ -11,10 +11,7 @@ from copy import deepcopy
 import requests
 from typing import Dict, Generator
 import re
-from langchain_core.prompts import ChatPromptTemplate
-
-from langchain_community.chat_models import ChatOllama
-from langchain_core.prompts import ChatPromptTemplate
+from ollama import AsyncClient
 
 
 class OllamaHTTPStrategy(CommunicationStrategy):
@@ -36,6 +33,8 @@ class OllamaHTTPStrategy(CommunicationStrategy):
                 del self.options[key]
 
     async def execute(self, data: Dict, cancel_signal: asyncio.Event = None):
+        print(data)
+
         if "model" not in self.kwargs:
             yield {"content": "Model not found in data", "is_last": True}
             return
@@ -48,23 +47,7 @@ class OllamaHTTPStrategy(CommunicationStrategy):
             "stream": self.stream,
             "options": self.options,
         }
-        llm = ChatOllama(
-            base_url=self.url,
-            model=payload["model"],
-            temperature=payload["options"].get("temperature", 0.0),
-            num_predict=payload["options"].get("num_predict", 200),
-            top_p=payload["options"].get("top_p", 1.0),
-            top_k=payload["options"].get("top_k", 50),
-            stop=payload["options"].get("stop", []),
-            timeout=10_000,
-        )
-        prompt = ChatPromptTemplate.from_messages(
-            [
-                ("system", "You are a helpful AI bot."),
-                ("human", "{user_input}"),
-            ]
-        )
-        self.chain = prompt | llm
+
         async for json_data in self._generate_response(payload, cancel_signal):
             if cancel_signal and cancel_signal.is_set():
                 cancel_signal.clear()
@@ -73,16 +56,22 @@ class OllamaHTTPStrategy(CommunicationStrategy):
             yield json_data
 
     async def _generate_response(self, payload, cancel_signal):
-        print("langchain_community.chat_models.ChatOllama")
+        message = {"role": "user", "content": payload["prompt"]}
         all_content = ""
-
-        if self.stream:
-            async for chunks in self.chain.astream({"user_input": payload["prompt"]}):
-                if cancel_signal.is_set():
-                    return
-                all_content += chunks.content
+        async for part in await AsyncClient(host=self.url).chat(
+            model=payload["model"], messages=[message], stream=payload["stream"]
+        ):
+            if cancel_signal.is_set():
+                return  # Immediate response to cancellation requests
+            if part.get("done", False):
+                # When the "done" flag is True, the message is considered complete
+                yield {"id": payload["id"], "content": all_content, "is_last": True}
+                continue
+            else:
+                all_content += part["message"]["content"]
+                # When the "done" flag is False, the message is considered incomplete
                 yield {"id": payload["id"], "content": all_content, "is_last": False}
-            yield {"id": payload["id"], "content": all_content, "is_last": True}
-        else:
-            all_content = self.chain.invoke({"user_input": "Why is the sky blue?"}).content
-            yield {"id": payload["id"], "content": all_content, "is_last": True}
+            if self.stream:
+                yield {"id": payload["id"], "content": all_content, "is_last": part["done"]}
+            else:
+                yield {"id": payload["id"], "content": part["message"]["content"], "is_last": part["done"]}

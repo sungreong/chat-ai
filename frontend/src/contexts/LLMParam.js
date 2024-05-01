@@ -31,7 +31,7 @@ const modelSettingsMetadata = {
         name: "url",
         label: "EndPoint URL",
         type: "text",
-        defaultValue: "http://localhost:11434/api/generate",
+        defaultValue: "http://localhost:11434",  // /api/generate
         placeholder: 'API URL을 입력하세요(http://...)'
     },
     {
