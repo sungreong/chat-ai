@@ -1,4 +1,4 @@
-# Project Name
+# Chat-AI-FullStack
 
 ## Description
 A brief description of your project.
