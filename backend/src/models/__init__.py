@@ -13,6 +13,8 @@ class StrategyFactory:
         "OPENAI": OpenAIStrategy,
         "REMOTE": HttpServiceStrategy,
         "OLLAMA": OllamaHTTPStrategy,
+        "HTTP(OLLAMA)": HttpServiceStrategy,
+        "HTTP(VLLM)": HttpServiceStrategy,
     }
 
     @staticmethod

@@ -65,6 +65,7 @@ class OllamaHTTPStrategy(CommunicationStrategy):
             ]
         )
         self.chain = prompt | llm
+
         async for json_data in self._generate_response(payload, cancel_signal):
             if cancel_signal and cancel_signal.is_set():
                 cancel_signal.clear()
@@ -84,5 +85,5 @@ class OllamaHTTPStrategy(CommunicationStrategy):
                 yield {"id": payload["id"], "content": all_content, "is_last": False}
             yield {"id": payload["id"], "content": all_content, "is_last": True}
         else:
-            all_content = self.chain.invoke({"user_input": "Why is the sky blue?"}).content
+            all_content = self.chain.invoke({"user_input": payload["prompt"]}).content
             yield {"id": payload["id"], "content": all_content, "is_last": True}

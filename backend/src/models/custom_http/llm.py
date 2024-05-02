@@ -12,12 +12,12 @@ from requests.adapters import HTTPAdapter
 from requests.exceptions import RequestException
 from sseclient import SSEClient
 from urllib.parse import urljoin
-from payload import PayloadFactory
 from typing import Any, Dict, Iterator, List, Mapping, Optional
 
 from langchain_core.callbacks.manager import CallbackManagerForLLMRun
 from langchain_core.language_models.llms import LLM
 from langchain_core.outputs import GenerationChunk
+from .payload import PayloadFactory
 
 
 class SSEManager:
@@ -157,6 +157,8 @@ class LLMAPI(LLM):
         """
         self.params["stream"] = True
         self.params["stop"] = stop or []
+        print(f"{prompt=}, {stop=}, {run_manager=}, {kwargs=}")
+
         payload = PayloadFactory().create_payload(model_type=self.llm_type, prompt=prompt, **self.params)
         headers = {"Content-Type": "application/json", "Accept": "text/event-stream"}
         sse_manager = SSEManager(
@@ -205,7 +207,6 @@ class LLMAPI(LLM):
         #     "stream": True,
         # }
         # headers = {"Content-Type": "application/json"}
-
         async with aiohttp.ClientSession() as session:
             async with session.post(
                 sse_manager.full_url,
@@ -214,8 +215,9 @@ class LLMAPI(LLM):
             ) as response:
                 async for data in self._stream_response(response):
                     chunk = GenerationChunk(text=data)
-                    if run_manager is not None:
-                        run_manager.on_llm_new_token(chunk.text, chunk=chunk)
+                    #  TODO: Implement callback manager
+                    # if run_manager is not None:
+                    #     run_manager.on_llm_new_token(chunk.text, chunk=chunk)
                     yield chunk
 
     async def _stream_response(self, response):

@@ -21,6 +21,35 @@ const modelSettingsMetadata = {
     { name: 'maxTokens', label: '최대 토큰 수 (maxTokens)', type: 'number', defaultValue: 200 },
     { name: 'topP', label: '상위 P% (topP)', type: 'number', step: '0.01', defaultValue: 0.9 },
   ],
+  "HTTP(OLLAMA)": [
+    {name: "apiToken",label: "API 토큰", type: "password", defaultValue: '', placeholder: 'API 토큰을 입력하세요'},
+    {name: "hostname", label: "EndPoint URL", type: "text", defaultValue: "http://localhost:11434", placeholder: 'API URL을 입력하세요(http://...)'},
+    {name: "endpoint", label: "EndPoint", type: "text", defaultValue: "/api/generate", placeholder: 'EndPoint를 입력하세요(/api/...)'},
+    {name: "llm_type", label: "LLM 타입", type: "text", defaultValue: "ollama", placeholder: 'LLM 타입을 입력하세요(ollama)'},
+    {name: 'model', label: '모델 선택 (model)', type: 'text', defaultValue: 'deepseek-coder:6.7b'},
+    {name: 'num_predict', label: '최대 토큰 수 (num_predict)', type: 'number', defaultValue: 200},
+    {name: 'top_p', label: '상위 P% (top_p)', type: 'number', step: '0.01', defaultValue: 0.9},
+    {name: 'stream', label: '스트리밍 모드 (stream)', type: 'boolean', defaultValue: true},
+    {name: 'seed', label: '시드 값 (seed)', type: 'number', defaultValue: 42},
+    {name: 'top_k', label: '상위 K (top_k)', type: 'number', defaultValue: 20},
+    {name: 'temperature', label: '온도 (temperature)', type: 'number', step: '0.1', defaultValue: 0.8},
+    {name: 'repeat_penalty', label: '반복 패널티 (repeat_penalty)', type: 'number', step: '0.1', defaultValue: 1.2},
+    {name: 'presence_penalty', label: '존재 패널티 (presence_penalty)', type: 'number', step: '0.1', defaultValue: 1.5},
+    {name: 'frequency_penalty', label: '빈도 패널티 (frequency_penalty)', type: 'number', step: '0.1', defaultValue: 1.0},
+    {name: 'stop', label: '종료 문자열 (stop)', type: 'text', defaultValue: '\\n, user:'}
+  ],
+  "HTTP(VLLM)": [
+    {name: "apiToken",label: "API 토큰", type: "password", defaultValue: '', placeholder: 'API 토큰을 입력하세요'},
+    {name: "hostname", label: "EndPoint URL", type: "text", defaultValue: "http://localhost:11434", placeholder: 'API URL을 입력하세요(http://...)'},
+    {name: "llm_type", label: "LLM 타입", type: "text", defaultValue: "vLLM", placeholder: 'LLM 타입을 입력하세요(ollama)'}, // TODO: vLLM으로 변경
+    {name: "endpoint", label: "EndPoint", type: "text", defaultValue: "/api/generate", placeholder: 'EndPoint를 입력하세요(/api/...)'},
+    {name: 'model', label: '모델 선택 (model)', type: 'text', defaultValue: 'deepseek-coder:6.7b'},
+    {name: 'max_tokens', label: '최대 토큰 수 (max_tokens)', type: 'number', defaultValue: 200},
+    {name: 'top_p', label: '상위 P% (top_p)', type: 'number', step: '0.01', defaultValue: 0.9},
+    {name: 'stream', label: '스트리밍 모드 (stream)', type: 'boolean', defaultValue: true},
+    {name: 'temperature', label: '온도 (temperature)', type: 'number', step: '0.1', defaultValue: 0.8},
+    {name: 'stop', label: '종료 문자열 (stop)', type: 'text', defaultValue: '\\n, user:'}
+  ],
   "OLLAMA": [
     {name: "apiToken",label: "API 토큰",
         type: "password",

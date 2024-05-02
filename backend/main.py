@@ -153,6 +153,7 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str) -> NoReturn:
         await websocket.send_text(f"Error: Strategy not found for user {user_id}.")
         return
     strategycls = await StrategyFactory.get_strategy(strategy_dict["model_type"])
+    print(strategy_dict["parameters"])
     strategy = strategycls(**strategy_dict["parameters"])
 
     async def cancel_task():
