@@ -10,14 +10,13 @@ from langchain.llms.base import LLM
 from pydantic import BaseModel, Field  # pylint: disable=no-name-in-module
 from requests.adapters import HTTPAdapter
 from requests.exceptions import RequestException
-from sseclient import SSEClient
 from urllib.parse import urljoin
 from typing import Any, Dict, Iterator, List, Mapping, Optional
 
 from langchain_core.callbacks.manager import CallbackManagerForLLMRun
 from langchain_core.language_models.llms import LLM
 from langchain_core.outputs import GenerationChunk
-from payload import PayloadFactory
+from .payload import PayloadFactory
 
 
 class SSEManager:
@@ -239,75 +238,11 @@ async def main():
     from langchain_core.runnables import RunnablePassthrough
     from langchain.prompts import PromptTemplate
 
-    def transform_func(inputs: dict) -> dict:
-        import re
-
-        text = inputs["text"]
-
-        # replace multiple new lines and multiple spaces with a single one
-        text = re.sub(r"(\r\n|\r|\n){2,}", r"\n", text)
-        text = re.sub(r"[ \t]+", " ", text)
-
-        return {"output_text": text}
-
-    clean_extra_spaces_chain = TransformChain(
-        input_variables=["text"], output_variables=["output_text"], transform=transform_func
-    )
-    template = """Paraphrase this text:
-
-    {output_text}
-
-    In the style of a {style}.
-
-    Paraphrase: """
-    from langchain.chains import LLMChain, LLMMathChain, TransformChain, SequentialChain
-
-    prompt = PromptTemplate(input_variables=["style", "output_text"], template=template)
-    style_paraphrase_chain = LLMChain(llm=llm, prompt=prompt, output_key="final_output")
-
-    sequential_chain = SequentialChain(
-        chains=[clean_extra_spaces_chain, style_paraphrase_chain],
-        input_variables=["text", "style"],
-        output_variables=["final_output"],
-    )
-    input_text = """
-    Chains allow us to combine multiple 
-
-
-    components together to create a single, coherent application. 
-
-    For example, we can create a chain that takes user input,       format it with a PromptTemplate, 
-
-    and then passes the formatted response to an LLM. We can build more complex chains by combining     multiple chains together, or by 
-
-
-    combining chains with other components.
-    """
-    print("=" * 30)
-    print(sequential_chain.run({"text": input_text, "style": "a 90s rapper"}))
-    print("=" * 30)
     llm_math = LLMMathChain(llm=llm, verbose=True)
     print("=" * 30)
     print(llm_math.run("What is 13 raised to the .3432 power?"))
     print("=" * 30)
     print(llm_math.prompt.template)
-    # # 프로그래밍 언어의 특정 기능에 대한 설명을 요청하는 템플릿
-    # prompt_template_feature_description = "Explain the {feature} feature in {language}."
-
-    # # 설명된 기능을 사용하는 코드 예제를 요청하는 템플릿
-    # prompt_template_code_example = "Give me an example of using {feature} in {language}."
-
-    # # 파이프라인 구성
-    # chain = (
-    #     PromptTemplate.from_template(prompt_template_feature_description)
-    #     | llm  # 첫 번째 LLM 호출: 기능에 대한 설명을 요청
-    #     | {"feature": RunnablePassthrough(), "language": RunnablePassthrough()}  # 받은 데이터를 다음 단계로 전달
-    #     | PromptTemplate.from_template(prompt_template_code_example)
-    #     | llm  # 두 번째 LLM 호출: 코드 예제를 요청
-    # )
-    # for chunk in chain.stream({"feature": "decorators", "language": "Python"}):
-    #     print(chunk, flush=True, end="")
-
     # for event in llm.stream("write python loop code example please!"):
     #     print(event, flush=True, end="")
     # # async for event in llm.astream("write python loop code example please!"):
